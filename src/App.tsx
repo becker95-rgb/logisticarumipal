@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Truck, Calendar, Sparkles, RefreshCw, FileText, CheckCircle2 } from "lucide-react";
 
 import { ParsedSheetData, Client } from "./types";
-import { DEFAULT_SHEET_DATA, parseTSV, parseDevolucionesCSV } from "./utils/sheetParser";
+import { DEFAULT_SHEET_DATA, parseTSV, parseDevolucionesCSVDetails } from "./utils/sheetParser";
 
 import MetricCards from "./components/MetricCards";
 import SheetSelector from "./components/SheetSelector";
@@ -44,45 +44,63 @@ export default function App() {
     });
   };
 
-  // Safe fetch from our Express Proxy Backend
+  // Safe fetch from our Direct Google Sheets Integration
   const handleLoadSheetUrl = async (url: string) => {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      const response = await fetch(`/api/fetch-sheet?url=${encodeURIComponent(url)}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Error del servidor: ${response.status}`);
+      let tsvUrl = url;
+      if (url.includes('/edit')) {
+        tsvUrl = url.split('/edit')[0] + '/export?format=tsv';
+      } else if (!url.endsWith('/export?format=tsv')) {
+        tsvUrl = url + '/export?format=tsv';
       }
       
-      const data = await response.json();
-      if (!data.tsv) {
-        throw new Error("El servidor no devolvió una planilla válida.");
+      const response = await fetch(tsvUrl);
+      if (!response.ok) {
+        throw new Error(`Error al obtener la planilla: ${response.status}`);
       }
+      
+      const tsvText = await response.text();
+      const data = { tsv: tsvText };
 
       // Parse TSV
       const parsed = parseTSV(data.tsv, url);
       
-      // Try to fetch Sheet 2 ("Hoja 2") or DEVOLUCIONES tab automatically to sync returns
+      // Load returns exclusively from Sheet 2 ("Hoja 2").
       let totalDevoluciones = 0;
-      const sheetTabNames = ["Hoja 2", "DEVOLUCIONES", "Devoluciones", "Sheet2", "Sheet 2"];
-      for (const tabName of sheetTabNames) {
-        try {
-          const returnsResponse = await fetch(`/api/fetch-sheet?url=${encodeURIComponent(url)}&sheetName=${encodeURIComponent(tabName)}`);
-          if (returnsResponse.ok) {
-            const resData = await returnsResponse.json();
-            if (resData.csv) {
-              const parsedDev = parseDevolucionesCSV(resData.csv);
-              if (parsedDev > 0) {
-                totalDevoluciones = parsedDev;
-                console.log(`Sincronizado con éxito: ${totalDevoluciones} devoluciones de la pestaña "${tabName}"`);
-                break;
-              }
-            }
-          }
-        } catch (e) {
-          console.warn(`No se pudo cargar la pestaña "${tabName}":`, e);
+      let foundReturnsSheet = false;
+      const sheetTabName = "Hoja 2";
+
+      const baseSheetUrl = url.includes('/edit') ? url.split('/edit')[0] : url;
+      try {
+        const candidateUrls = [
+          `${baseSheetUrl}/export?format=tsv&sheet=${encodeURIComponent(sheetTabName)}`,
+          `${baseSheetUrl}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetTabName)}`,
+        ];
+
+        for (const returnsUrl of candidateUrls) {
+          const returnsResponse = await fetch(returnsUrl);
+          if (!returnsResponse.ok) continue;
+
+          const returnsText = await returnsResponse.text();
+          if (!returnsText || returnsText.trim() === "") continue;
+          if (returnsText.trimStart().startsWith("<")) continue;
+
+          const parsedDev = parseDevolucionesCSVDetails(returnsText);
+          if (parsedDev.numericCellCount === 0) continue;
+
+          totalDevoluciones = parsedDev.total;
+          foundReturnsSheet = true;
+          console.log(`Sincronizado con éxito: ${totalDevoluciones} devoluciones de la pestaña "${sheetTabName}"`);
+          break;
         }
+
+        if (!foundReturnsSheet) {
+          console.warn(`No se pudo obtener contenido numérico desde la pestaña "${sheetTabName}"`);
+        }
+      } catch (e) {
+        console.warn(`No se pudo cargar la pestaña "${sheetTabName}":`, e);
       }
 
       parsed.totalDevoluciones = totalDevoluciones;
@@ -197,8 +215,7 @@ export default function App() {
                 : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
             }`}
           >
-            <FileText className="w-3.5 h-3.5" />
-            Panel 1: Planilla
+            General
           </button>
           <button
             id="tab-view-weekly"
@@ -209,54 +226,32 @@ export default function App() {
                 : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
             }`}
           >
-            <Calendar className="w-3.5 h-3.5" />
-            Panel 2: Semanal
+            Semanal
           </button>
         </div>
 
-        {/* Content Layout per State Active Tab */}
-        <div id="panels-grid-container" className="space-y-6">
-          {(activeTab === "all" || activeTab === "general") && (
-            <div id="section-general-table" className="animate-fade-in">
-              <FirstPanelTable
-                clients={clientsWithDeliveryStatus}
-                products={sheetData.products}
-              />
-            </div>
-          )}
-
-          {(activeTab === "all" || activeTab === "weekly") && (
-            <div id="section-weekly-timeline" className="animate-fade-in">
-              <SecondPanelWeekly
-                clients={clientsWithDeliveryStatus}
-                products={sheetData.products}
-                onToggleDelivered={handleToggleDelivered}
-              />
-            </div>
-          )}
-        </div>
+        {/* Conditional Layout Panels */}
+        {activeTab === "all" && (
+          <div className="flex flex-col gap-8">
+            <FirstPanelTable clients={clientsWithDeliveryStatus} products={sheetData.products} />
+            <SecondPanelWeekly
+              clients={clientsWithDeliveryStatus}
+              products={sheetData.products}
+              onToggleDelivered={handleToggleDelivered}
+            />
+          </div>
+        )}
+        {activeTab === "general" && (
+          <FirstPanelTable clients={clientsWithDeliveryStatus} products={sheetData.products} />
+        )}
+        {activeTab === "weekly" && (
+          <SecondPanelWeekly
+            clients={clientsWithDeliveryStatus}
+            products={sheetData.products}
+            onToggleDelivered={handleToggleDelivered}
+          />
+        )}
       </main>
-
-      {/* Footer Instructions / Guides */}
-      <footer id="app-footer-guide" className="max-w-7xl mx-auto px-4 md:px-8 pb-12 mt-4">
-        <div className="bg-slate-100 rounded-xl p-5 border border-slate-200/60">
-          <h4 className="text-xs font-black text-slate-700 tracking-wider uppercase mb-2 flex items-center gap-1">
-            <CheckCircle2 className="w-4 h-4 text-slate-500" />
-            Guía de Uso Rápido
-          </h4>
-          <ul className="text-xs text-slate-500 space-y-1.5 list-disc list-inside">
-            <li>
-              <span className="font-semibold text-slate-700">Compartir Planilla:</span> Tu Google Sheet debe estar configurado como "Cualquier persona con el enlace puede ver".
-            </li>
-            <li>
-              <span className="font-semibold text-slate-700">Filtros Cruzados (Panel 1):</span> Puedes aislar por día de Carga, Reparto y Transportes específicos en tiempo real.
-            </li>
-            <li>
-              <span className="font-semibold text-slate-700">Control de Entregas (Panel 2):</span> Haz clic en el casillero de check del cliente para tachar su orden una vez entregada. Las entregas se guardan de forma segura en tu navegador.
-            </li>
-          </ul>
-        </div>
-      </footer>
     </div>
   );
 }

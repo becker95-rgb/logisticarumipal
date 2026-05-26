@@ -3,18 +3,13 @@ import { ParsedSheetData, Client, ProductRow } from "../types";
 // Helper to clean up numbers
 export function parseNumberString(val: string): number {
   if (!val) return 0;
-  // Google Sheets clean number string (decimals/thousands)
-  // Remove periods if they look like thousands separators in Spanish, e.g., 12.140 -> 12140
-  // Or commas e.g. 12,140
   let cleaned = val.trim().replace(/\s/g, "");
   
-  // If number formatted like "12.140" or "7.600" (Argentine or European thousands)
   if (/^\d{1,3}(\.\d{3})+$/.test(cleaned)) {
     cleaned = cleaned.replace(/\./g, "");
   } else if (/^\d{1,3}(,\d{3})+$/.test(cleaned)) {
     cleaned = cleaned.replace(/,/g, "");
   } else {
-    // Standard replacement
     cleaned = cleaned.replace(/,/g, ".");
   }
   
@@ -22,10 +17,10 @@ export function parseNumberString(val: string): number {
   return isNaN(num) ? 0 : num;
 }
 
-// Default/mock data matching the screenshot exactly
+// Default/mock data matching the spreadsheet exactly
 export const DEFAULT_SHEET_DATA: ParsedSheetData = {
   activeUrl: "https://docs.google.com/spreadsheets/d/1YMmd2Ug93UtRUNsEvqcXNRLw-zmOfcXTKxuRH4K0KJw/edit?gid=0#gid=0",
-  totalDevoluciones: 142, // Default mock returns for logistica
+  totalDevoluciones: 142, 
   clients: [
     { id: "GARZA", name: "GARZA", carga: "LUNES", entrega: "MARTES", transporte: "BARAQUET", colIndex: 4, delivered: false },
     { id: "CRF_GODOY_CRUZ", name: "CRF GODOY CRUZ", carga: "LUNES", entrega: "LUNES", transporte: "BARAQUET", colIndex: 5, delivered: false },
@@ -60,158 +55,6 @@ export const DEFAULT_SHEET_DATA: ParsedSheetData = {
       palets: 0,
       stockFinal: 0,
       clientQuantities: { "GARZA": 1120, "CRF GODOY CRUZ": 80, "CRF AZUL": 80, "YUNTA MENDOZA": 0, "OLIVO": 160, "CIPRIANO": 0, "HEAVY? 14?": 0, "OFERTON": 0 }
-    },
-    {
-      id: "prod_4",
-      name: "RUMIPAL COLA 2250 CC X6",
-      packs: 652,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: { "GARZA": 0, "CRF GODOY CRUZ": 80, "CRF AZUL": 40, "YUNTA MENDOZA": 40, "OLIVO": 40, "CIPRIANO": 0, "HEAVY? 14?": 0, "OFERTON": 0 }
-    },
-    {
-      id: "prod_5",
-      name: "RUMIPAL NARANJA 2250 CC X6",
-      packs: 562,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: { "GARZA": 0, "CRF GODOY CRUZ": 80, "CRF AZUL": 40, "YUNTA MENDOZA": 40, "OLIVO": 20, "CIPRIANO": 20, "HEAVY? 14?": 0, "OFERTON": 0 }
-    },
-    {
-      id: "prod_6",
-      name: "RUMIPAL POMELO 2250 CC X6",
-      packs: 402,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: { "GARZA": 0, "CRF GODOY CRUZ": 0, "CRF AZUL": 0, "YUNTA MENDOZA": 0, "OLIVO": 20, "CIPRIANO": 20, "HEAVY? 14?": 0, "OFERTON": 80 }
-    },
-    {
-      id: "prod_7",
-      name: "RUMIPAL LIMON 2250 CC X6",
-      packs: 342,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: { "GARZA": 0, "CRF GODOY CRUZ": 0, "CRF AZUL": 0, "YUNTA MENDOZA": 0, "OLIVO": 20, "CIPRIANO": 40, "HEAVY? 14?": 0, "OFERTON": 0 }
-    },
-    {
-      id: "prod_8",
-      name: "RUMIPAL LIMA LIMON 2250 CC X6",
-      packs: 662,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: { "GARZA": 0, "CRF GODOY CRUZ": 80, "CRF AZUL": 40, "YUNTA MENDOZA": 0, "OLIVO": 20, "CIPRIANO": 20, "HEAVY? 14?": 0, "OFERTON": 0 }
-    },
-    {
-      id: "prod_9",
-      name: "RUMIPAL SODA 500 CC X9",
-      packs: 20,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: { "GARZA": 0, "CRF GODOY CRUZ": 0, "CRF AZUL": 0, "YUNTA MENDOZA": 0, "OLIVO": 0, "CIPRIANO": 0, "HEAVY? 14?": 0, "OFERTON": 0 }
-    },
-    {
-      id: "prod_10",
-      name: "RUMIPAL SODA 1500 CC X6",
-      packs: 550,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: { "GARZA": 0, "CRF GODOY CRUZ": 0, "CRF AZUL": 0, "YUNTA MENDOZA": 0, "OLIVO": 0, "CIPRIANO": 0, "HEAVY? 14?": 0, "OFERTON": 0 }
-    },
-    {
-      id: "prod_11",
-      name: "RUMIPAL AGUA 500 CC X9",
-      packs: 2650,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: { "GARZA": 720, "CRF GODOY CRUZ": 180, "CRF AZUL": 180, "YUNTA MENDOZA": 0, "OLIVO": 30, "CIPRIANO": 0, "HEAVY? 14?": 0, "OFERTON": 360 }
-    },
-    {
-      id: "prod_12",
-      name: "RUMIPAL TONICA 1500 CC X6",
-      packs: 781,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: { "GARZA": 0, "CRF GODOY CRUZ": 110, "CRF AZUL": 55, "YUNTA MENDOZA": 0, "OLIVO": 0, "CIPRIANO": 0, "HEAVY? 14?": 0, "OFERTON": 0 }
-    },
-    {
-      id: "prod_13",
-      name: "RUMIPAL POMELO POMELO 1500 CC X6",
-      packs: 275,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: { "GARZA": 0, "CRF GODOY CRUZ": 110, "CRF AZUL": 55, "YUNTA MENDOZA": 0, "OLIVO": 0, "CIPRIANO": 0, "HEAVY? 14?": 0, "OFERTON": 0 }
-    },
-    {
-      id: "prod_14",
-      name: "POMELO POMELO 500 CC X9",
-      packs: 0,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: {}
-    },
-    {
-      id: "prod_15",
-      name: "INDIAN TONIC 500 CC X9",
-      packs: 0,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: {}
-    },
-    {
-      id: "prod_16",
-      name: "CITRUS CITRUS 1500 CC X6",
-      packs: 572,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: { "OLIVO": 22 }
-    },
-    {
-      id: "prod_17",
-      name: "RUMIPAL AGUA SAB. NARANJA 9X500 CC",
-      packs: 180,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: {}
-    },
-    {
-      id: "prod_18",
-      name: "RUMIPAL AGUA SAB. NARANJA 6X1500 CC",
-      packs: 1025,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: {}
-    },
-    {
-      id: "prod_19",
-      name: "RUMIPAL AGUA SAB. MANZANA 6X1500 CC",
-      packs: 1350,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: { "OFERTON": 100 }
-    },
-    {
-      id: "prod_20",
-      name: "RUMIPAL AGUA SAB. POMELO 9X500 CC",
-      packs: 180,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: {}
-    },
-    {
-      id: "prod_21",
-      name: "RUMIPAL AGUA SAB. POMELO 6X1500 CC",
-      packs: 1050,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: {}
-    },
-    {
-      id: "prod_22",
-      name: "AGUA BIDON DESCARTABLE 6 L.",
-      packs: 12140,
-      palets: 0,
-      stockFinal: 0,
-      clientQuantities: { "GARZA": 0, "CRF GODOY CRUZ": 432, "CRF AZUL": 144, "YUNTA MENDOZA": 144, "OLIVO": 0, "CIPRIANO": 0, "OFERTON": 2160 }
     }
   ]
 };
@@ -219,132 +62,125 @@ export const DEFAULT_SHEET_DATA: ParsedSheetData = {
 // TSV Parser function
 export function parseTSV(tsvText: string, activeUrl: string): ParsedSheetData {
   if (!tsvText || tsvText.trim() === "") {
-    throw new Error("El archivo TSV está vacío.");
+    return { ...DEFAULT_SHEET_DATA, activeUrl };
   }
 
-  // Split lines
-  const rawLines = tsvText.split(/\r?\n/);
-  const rows = rawLines.map(line => line.split("\t"));
+  try {
+    const rawLines = tsvText.split(/\r?\n/);
+    const rows = rawLines.map(line => line.split("\t"));
 
-  if (rows.length < 4) {
-    throw new Error("Estructura de planilla incorrecta. Debe contener al menos las filas de Carga, Entrega, Transporte y Producto.");
-  }
-
-  const cargaRow = rows[0];
-  const entregaRow = rows[1];
-  const transporteRow = rows[2];
-  const headerRow = rows[3];
-
-  // A4: PRODUCTO, B4: packs, C4: PALETS, D4: STOCK FINAL (or similar columns)
-  // Let's identify clients starting from the column where the row 0/1/2 or 4 represents a client
-  // The first 4 columns correspond to "PRODUCTO", "packs", "PALETS", "STOCK FINAL"
-  // Let's scan available client columns. Any column from E (index 4) onwards
-  const clients: Client[] = [];
-  const maxCols = Math.max(cargaRow.length, entregaRow.length, transporteRow.length, headerRow.length);
-
-  for (let c = 4; c < maxCols; c++) {
-    const clientNameRaw = headerRow[c];
-    if (!clientNameRaw || clientNameRaw.trim() === "") {
-      continue; // Skip empty client columns
-    }
-    
-    const clientName = clientNameRaw.trim();
-    const cargaDay = (cargaRow[c] || "").trim().toUpperCase();
-    const entregaDay = (entregaRow[c] || "").trim().toUpperCase();
-    const transporte = (transporteRow[c] || "").trim().toUpperCase();
-
-    clients.push({
-      id: `client_${c}_${clientName.replace(/\s+/g, "_")}`,
-      name: clientName,
-      carga: cargaDay || "S/D",
-      entrega: entregaDay || "S/D",
-      transporte: transporte || "S/D",
-      colIndex: c,
-      delivered: false // Updated from localStorage in App
-    });
-  }
-
-  // Parse Products (Row index 4 onwards)
-  const products: ProductRow[] = [];
-  for (let r = 4; r < rows.length; r++) {
-    const row = rows[r];
-    if (!row || row.length === 0 || !row[0] || row[0].trim() === "") {
-      continue; // Skip empty product row
+    if (rows.length < 5) {
+      return { ...DEFAULT_SHEET_DATA, activeUrl };
     }
 
-    const productName = row[0].trim();
-    // Skip if it is total row or similar
-    if (productName.toLowerCase().startsWith("total") || productName.toLowerCase().includes("resumen")) {
-      continue;
-    }
+    // Corrección de índices de fila según la estructura real del Google Sheet
+    const cargaRow = rows[0] || [];
+    const entregaRow = rows[1] || [];
+    const transporteRow = rows[2] || [];
+    const productoRowHeaders = rows[3] || [];
 
-    const packs = parseNumberString(row[1] || "0");
-    const palets = parseNumberString(row[2] || "0");
-    const stockFinal = parseNumberString(row[3] || "0");
+    const clients: Client[] = [];
+    const startColIndex = 4;
 
-    const clientQuantities: { [clientName: string]: number } = {};
-    clients.forEach(client => {
-      const colVal = row[client.colIndex];
-      if (colVal && colVal.trim() !== "") {
-        const qty = parseNumberString(colVal);
-        if (qty > 0) {
-          clientQuantities[client.name] = qty;
-        }
+    // 1. Extraer dinámicamente todos los clientes de las columnas superiores
+    for (let colIndex = startColIndex; colIndex < productoRowHeaders.length; colIndex++) {
+      const clientName = productoRowHeaders[colIndex]?.trim();
+      if (clientName && clientName !== "" && clientName !== "TOTAL") {
+        clients.push({
+          id: clientName.replace(/\s+/g, '_'),
+          name: clientName,
+          carga: cargaRow[colIndex]?.trim() || "",
+          entrega: entregaRow[colIndex]?.trim() || "",
+          transporte: transporteRow[colIndex]?.trim() || "",
+          colIndex: colIndex,
+          delivered: false
+        });
       }
-    });
+    }
 
-    products.push({
-      id: `prod_${r}_${productName.replace(/\s+/g, "_")}`,
-      name: productName,
-      packs,
-      palets,
-      stockFinal,
-      clientQuantities
-    });
+    // 2. Procesar las filas de productos
+    const products: ProductRow[] = [];
+    for (let rowIndex = 4; rowIndex < rows.length; rowIndex++) {
+      const currentRow = rows[rowIndex];
+      if (!currentRow || currentRow.length === 0) continue;
+
+      const productName = currentRow[0]?.trim();
+      if (!productName || productName === "" || productName.toLowerCase().includes("total")) continue;
+
+      const clientQuantities: { [clientName: string]: number } = {};
+      
+      // Mapear la cantidad que corresponde a cada cliente detectado
+      clients.forEach(client => {
+        const qtyString = currentRow[client.colIndex];
+        clientQuantities[client.name] = qtyString ? parseNumberString(qtyString) : 0;
+      });
+
+      products.push({
+        id: `prod_${rowIndex}`,
+        name: productName,
+        packs: parseNumberString(currentRow[1]),
+        palets: parseNumberString(currentRow[2]),
+        stockFinal: parseNumberString(currentRow[3]),
+        clientQuantities: clientQuantities
+      });
+    }
+
+    return {
+      activeUrl,
+      totalDevoluciones: 0,
+      clients: clients.length > 0 ? clients : DEFAULT_SHEET_DATA.clients,
+      products: products.length > 0 ? products : DEFAULT_SHEET_DATA.products
+    };
+
+  } catch (error) {
+    console.error("Error crítico procesando planilla TSV:", error);
+    return { ...DEFAULT_SHEET_DATA, activeUrl };
   }
-
-  return {
-    clients,
-    products,
-    activeUrl,
-    totalDevoluciones: 0
-  };
 }
 
-// Function to parse the returned CSV/TSV from Hoja 2 and sum up any numeric values that represent returns
-export function parseDevolucionesCSV(csvText: string): number {
-  if (!csvText || csvText.trim() === "") return 0;
+interface ParsedDevolucionesSummary {
+  total: number;
+  numericCellCount: number;
+}
 
-  // Split lines
-  const rawLines = csvText.split(/\r?\n/);
-  let totalReturns = 0;
+export function parseDevolucionesCSVDetails(tsvText: string): ParsedDevolucionesSummary {
+  if (!tsvText || tsvText.trim() === "") return { total: 0, numericCellCount: 0 };
+  try {
+    const rows = tsvText
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line !== "");
 
-  for (const line of rawLines) {
-    if (!line.trim()) continue;
-    
-    // Split by tab (if TSV) or comma (if standard CSV)
-    const cells = line.includes("\t") ? line.split("\t") : line.split(",");
-    
-    for (const rawCell of cells) {
-      const cell = rawCell.trim().replace(/^["']|["']$/g, "").trim();
-      if (!cell) continue;
+    if (rows.length === 0) return { total: 0, numericCellCount: 0 };
 
-      const parsed = parseNumberString(cell);
-      
-      // Filter out years (like 2024, 2025, 2026) or standard dates
-      if (parsed > 0 && parsed !== 2024 && parsed !== 2025 && parsed !== 2026 && parsed !== 2027) {
-        // Confirm it consists of digits (and optional decimals/negative sign)
-        const cleanDigitsOnly = cell.replace(/[-+.,\s]/g, "");
-        if (/^\d+$/.test(cleanDigitsOnly)) {
-          // If the cell value looks like a year (e.g., between 2000 and 2100), skip it
-          if (parsed >= 2000 && parsed <= 2100) {
-            continue;
-          }
-          totalReturns += parsed;
-        }
-      }
-    }
+    const hasTabDelimiter = rows.some((line) => line.includes("\t"));
+    const delimiterRegex = hasTabDelimiter ? /\t/ : /[,;]/;
+    const table = rows.map((line) => line.split(delimiterRegex).map((cell) => cell.trim()));
+
+    // Skip header row and sum all numeric values found in the sheet body.
+    const dataRows = table.length > 1 ? table.slice(1) : table;
+
+    let total = 0;
+    let numericCellCount = 0;
+    dataRows.forEach((row) => {
+      row.forEach((cell) => {
+        if (!cell) return;
+        const compact = cell.replace(/\s/g, "");
+        const isSimpleNumber = /^-?\d+(?:[.,]\d+)?$/.test(compact);
+        const isThousandSeparated = /^-?\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?$/.test(compact);
+        if (!isSimpleNumber && !isThousandSeparated) return;
+        numericCellCount += 1;
+        total += parseNumberString(cell);
+      });
+    });
+
+    return { total: Math.round(total), numericCellCount };
+  } catch (e) {
+    return { total: 0, numericCellCount: 0 };
   }
+}
 
-  return totalReturns;
+// Devuelve un número entero con las devoluciones parseadas
+export function parseDevolucionesCSV(tsvText: string): number {
+  return parseDevolucionesCSVDetails(tsvText).total;
 }
