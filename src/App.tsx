@@ -79,9 +79,26 @@ export default function App() {
 
       const baseSheetUrl = url.includes('/edit') ? url.split('/edit')[0] : url;
       try {
+        const candidateTexts: string[] = [];
+
+        // 1) Prefer backend proxy: it reliably fetches a specific tab by name.
+        try {
+          const proxyUrl = `/api/fetch-sheet?url=${encodeURIComponent(url)}&sheetName=${encodeURIComponent(sheetTabName)}`;
+          const proxyResponse = await fetch(proxyUrl);
+          if (proxyResponse.ok) {
+            const proxyData = await proxyResponse.json();
+            if (typeof proxyData?.csv === "string" && proxyData.csv.trim() !== "") {
+              candidateTexts.push(proxyData.csv);
+            }
+          }
+        } catch (proxyError) {
+          console.warn("No se pudo obtener Hoja 2 por proxy interno:", proxyError);
+        }
+
+        // 2) Fallbacks directos a Google (por si no existe backend en el entorno).
         const candidateUrls = [
-          `${baseSheetUrl}/export?format=tsv&sheet=${encodeURIComponent(sheetTabName)}`,
           `${baseSheetUrl}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetTabName)}`,
+          `${baseSheetUrl}/export?format=tsv&sheet=${encodeURIComponent(sheetTabName)}`,
         ];
 
         for (const returnsUrl of candidateUrls) {
@@ -89,6 +106,10 @@ export default function App() {
           if (!returnsResponse.ok) continue;
 
           const returnsText = await returnsResponse.text();
+          candidateTexts.push(returnsText);
+        }
+
+        for (const returnsText of candidateTexts) {
           if (!returnsText || returnsText.trim() === "") continue;
           if (returnsText.trimStart().startsWith("<")) continue;
 

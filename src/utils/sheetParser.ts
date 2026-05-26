@@ -165,12 +165,20 @@ export function parseDevolucionesCSVDetails(tsvText: string): ParsedDevoluciones
     dataRows.forEach((row) => {
       row.forEach((cell) => {
         if (!cell) return;
-        const compact = cell.replace(/\s/g, "");
+        const normalizedCell = cell
+          .replace(/^"(.*)"$/, "$1")
+          .replace(/^'(.*)'$/, "$1")
+          .replace(/\u00A0/g, " ")
+          .trim();
+
+        if (!normalizedCell) return;
+
+        const compact = normalizedCell.replace(/\s/g, "");
         const isSimpleNumber = /^-?\d+(?:[.,]\d+)?$/.test(compact);
         const isThousandSeparated = /^-?\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?$/.test(compact);
         if (!isSimpleNumber && !isThousandSeparated) return;
         numericCellCount += 1;
-        total += parseNumberString(cell);
+        total += parseNumberString(normalizedCell);
       });
     });
 
