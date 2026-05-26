@@ -1,0 +1,6 @@
+{
+  "name": "LOGISTICA RUMIPAL",
+  "description": "Dashboard para visualizar planillas de bultos por cliente, organizar entregas cronológicamente y marcar clientes entregados.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
