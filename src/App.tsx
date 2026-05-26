@@ -12,6 +12,10 @@ import SecondPanelWeekly from "./components/SecondPanelWeekly";
 const LOCAL_STORAGE_KEY_URL = "control_bultos_active_url";
 const LOCAL_STORAGE_KEY_DELIVERED = "control_bultos_delivered_map";
 
+function normalizeSheetText(raw: string): string {
+  return raw.replace(/\r/g, "").trim();
+}
+
 export default function App() {
   const [sheetData, setSheetData] = useState<ParsedSheetData>(DEFAULT_SHEET_DATA);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -62,6 +66,7 @@ export default function App() {
       }
       
       const tsvText = await response.text();
+      const normalizedMainSheet = normalizeSheetText(tsvText);
       const data = { tsv: tsvText };
 
       // Parse TSV
@@ -86,6 +91,10 @@ export default function App() {
           const returnsText = await returnsResponse.text();
           if (!returnsText || returnsText.trim() === "") continue;
           if (returnsText.trimStart().startsWith("<")) continue;
+
+          // Some Google export URLs can ignore the sheet selector and return the main tab.
+          // If content is identical to the already-loaded main sheet, skip it.
+          if (normalizeSheetText(returnsText) === normalizedMainSheet) continue;
 
           const parsedDev = parseDevolucionesCSVDetails(returnsText);
           if (parsedDev.numericCellCount === 0) continue;
