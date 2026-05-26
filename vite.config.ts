@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
   return {
-    base: '/logistica-rumipal/',
+    base: '/logisticarumipal/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
